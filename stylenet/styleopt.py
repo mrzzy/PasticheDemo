@@ -26,14 +26,12 @@ from datetime import datetime
 def transfer_style(content_image, style_image, n_epochs=100, image_size=(64, 64),
                    verbose=False):
     # Update style parameters
-    stylefn.IMAGE_DIM = image_size + (3,)
-
+    stylefn.SETTINGS["image_shape"] = image_size + (3,)
+    
     # Preprocess image data
     content = stylefn.preprocess_image(content_image)
-    print(content.shape)
     style = stylefn.preprocess_image(style_image)
     pastiche = content.copy() # Generate pastiche from content
-
     
     # Setup input tensors
     tf.reset_default_graph()
@@ -68,7 +66,7 @@ def transfer_style(content_image, style_image, n_epochs=100, image_size=(64, 64)
             writer.add_summary(summary, i)
     
     # Deprocess style transfered image
-    pastiche_image = deprocess_image(pastiche)
+    pastiche_image = stylefn.deprocess_image(pastiche)
     return pastiche_image
 
 if __name__ == "__main__":
