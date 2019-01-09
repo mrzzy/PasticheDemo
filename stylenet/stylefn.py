@@ -1,5 +1,5 @@
 #
-# style.py
+# stylefn.py
 # Artistic Style Transfer Metrics and Losses
 # as defined in Gatys et. al
 #
@@ -8,7 +8,7 @@ import numpy as np
 import tensorflow as tf
 import keras.backend as K
 import matplotlib.pyplot as plt
-
+ 
 from PIL import Image
 from datetime import datetime
 from keras.models import Model
@@ -234,55 +234,3 @@ def reverse_tensor(pastiche_op):
     blue_op = blue_op + 123.68
 
     return tf.stack([red_op, green_op, blue_op], axis=-1)
-    
-if __name__ == "__main__":
-    import os
-    from shutil import rmtree
-
-    content = preprocess_image(Image.open("./data/Tuebingen_Neckarfront.jpg"))
-    style = preprocess_image(Image.open("./data/stary_night.jpg"))
-    pastiche = content.copy() # Generate pastiche from content
-
-    tf.reset_default_graph()
-    session = tf.Session()
-    K.set_session(session)
-
-    pastiche_op = K.variable(pastiche, name="pastiche")
-    content_op = K.constant(content, name="content")
-    style_op = K.constant(style, name="style")
-    
-    loss_op = build_loss(pastiche_op, content_op, style_op)
-    
-    optimizer = tf.train.AdamOptimizer(learning_rate=3e+1)
-    train_op = optimizer.minimize(loss_op, var_list=[pastiche_op])
-
-    writer = tf.summary.FileWriter("logs/{}".format(datetime.now()), session.graph)
-    # Track changes to pastiche with tensorboard
-    tf.summary.histogram("pasitche_changes", pastiche_op)
-    tf.summary.image("pastiche", tf.expand_dims(reverse_tensor(pastiche_op), axis=0))
-    summary_op = tf.summary.merge_all()
-
-    session.run(tf.global_variables_initializer())
-    n_epochs = 150
-    
-    # Setup pastiche directory
-    if os.path.exists("pastiche"): rmtree("pastiche")
-    os.mkdir("pastiche")
-
-    for i in range(n_epochs):
-        feed = {K.learning_phase(): 0}
-        _, loss, pastiche, summary = session.run([train_op, loss_op, pastiche_op,
-                                                  summary_op], feed_dict=feed)
-        print("[{}/{}] loss: {:e}".format(i, n_epochs, loss))
-        
-        pastiche_image = deprocess_image(pastiche)
-
-        # Plot current pastiche image to show progressa
-        plt.imshow(np.asarray(pastiche_image))
-        plt.draw()
-        plt.pause(1e-9)
-        
-        # Save pastiche image for laster
-        pastiche_image.save("pastiche/{}.jpg".format(i))
-
-        writer.add_summary(summary, i)
