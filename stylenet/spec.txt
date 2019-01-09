@@ -1,0 +1,20 @@
+Style transfer REST API
+PUT /api/style:
+    payload: json {
+        content: content jpeg image base64 encoded
+        style: style jpeg image base64 encoded
+    }
+    
+    status: 201
+    response: json {
+        id: uuid of the styled image 
+    }
+
+
+GET /api/styled/<id>:
+    status: 200 - success/202 - not ready
+    response: jpeg image
+
+GET /api/styled/<id>/<iteration>:
+    status: 200 - success/202 - not ready
+    response: jpeg image
