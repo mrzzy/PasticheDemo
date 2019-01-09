@@ -7,9 +7,9 @@ import json
 import uuid
 from base64 import b64encode, b64decode
 
-#SERVER_URL = "http://153.20.56.64"
 SERVER_PORT = 8008
-SERVER_URL = "http://127.0.0.1:{}".format(SERVER_PORT)
+#SERVER_URL = "http://127.0.0.1:{}".format(SERVER_PORT)
+SERVER_URL = "http://153.20.56.64:{}".format(SERVER_PORT)
 
 TAG_KEY = "tag_uuid_str"
 CONTENT_KEY = "content_base64_jpeg"
