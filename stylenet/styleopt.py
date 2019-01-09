@@ -23,8 +23,10 @@ from datetime import datetime
 # Optimise for the given number epochs. If verbose is True, will output training
 # progress infomation to standard output
 # Returns the pastiche, the results of performing style transfer
-def transfer_style(content_image, style_image, n_epochs=100, image_size=(64, 64),
+K.set_learning_phase(0)
+def transfer_style(content_image, style_image, n_epochs=100, image_size=(512, 512),
                    verbose=False):
+    #TODO: add progressive style transfer
     # Update style parameters
     stylefn.SETTINGS["image_shape"] = image_size + (3,)
     
@@ -34,7 +36,6 @@ def transfer_style(content_image, style_image, n_epochs=100, image_size=(64, 64)
     pastiche = content.copy() # Generate pastiche from content
     
     # Setup input tensors
-    tf.reset_default_graph()
     pastiche_op = K.variable(pastiche, name="pastiche")
     content_op = K.constant(content, name="content")
     style_op = K.constant(style, name="style")
@@ -55,14 +56,12 @@ def transfer_style(content_image, style_image, n_epochs=100, image_size=(64, 64)
         writer = tf.summary.FileWriter("logs/{}".format(datetime.now()), session.graph)
 
     session.run(tf.global_variables_initializer())
-    for i in range(n_epochs):
-        feed = {K.learning_phase(): 0} # Ensure that keras is test mode
-        _, loss, pastiche = session.run([train_op, loss_op, pastiche_op], 
-                                        feed_dict=feed)
+    for i in range(1, n_epochs + 1):
+        _, loss, pastiche = session.run([train_op, loss_op, pastiche_op])
         # Display progress infomation and record data for tensorboard
         if verbose: 
-            print("[{}/{}] loss: {:e}".format(i, n_epochs, loss))
-            summary = session.run(summary_op, feed_dict=feed)
+            print("[{}/{}] loss: {:e}".format(i, n_epochs, loss), end="\r")
+            summary = session.run(summary_op)
             writer.add_summary(summary, i)
     
     # Deprocess style transfered image
@@ -73,5 +72,5 @@ if __name__ == "__main__":
     content_image = Image.open("data/Tuebingen_Neckarfront.jpg")
     style_image = Image.open("data/stary_night.jpg")
     pastiche_image = transfer_style(content_image, style_image, verbose=True)
-
+    
     pastiche_image.save("pastiche.jpg")
