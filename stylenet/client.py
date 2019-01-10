@@ -22,18 +22,30 @@ def parse_args():
     - Performs style transfer through style transfer server
     """)
     parser.add_argument("-v", action="store_true", help="produce verbose output")
+    parser.add_argument("-s", nargs="?", type=float, help="how much weight to style reproduction")
+    parser.add_argument("-c", nargs="?", type=float, help="how much weight to content reproduction")
+    parser.add_argument("-d", nargs="?", type=float, help="how much weight to given produce a smooth image")
+    parser.add_argument("-n", nargs="?", type=int, help="how many iterations of style transer to perform")
     parser.add_argument("content", help="path to the content image. \
                         Use special value ':camera' to obtain image from camera")
     parser.add_argument("style", help="path to the style image")
     #TODO; add options for stylefn settings
     args = parser.parse_args()
 
-    # Program options
+    # Parse style transfer settings
+    settings = {}
+    if args.c: settings[api.SETTING_CONTENT_WEIGHT_KEY] = args.c
+    if args.s: settings[api.SETTING_STYLE_WEIGHT_KEY] = args.s
+    if args.d: settings[api.SETTING_DENOISE_WEIGHT_KEY] = args.d
+    if args.n: settings[api.SETTING_NUMBER_EPOCHS_KEY] = args.n
+
+    # Build Program options
     options = { 
         "content_path": args.content if args.content != ":camera" else None,
         "use_camera": True if args.content == ":camera" else False,
         "style_path": args.style,
-        "verbose": True if not args.v is None else False
+        "verbose": args.v,
+        "settings": settings
     }
     return options
 
@@ -52,17 +64,15 @@ if __name__ == "__main__":
     
     # Build style transfer payload
     tag_id = str(uuid.uuid4())
-    payload = api.pack_payload(content_data, style_data, tag_id)
+    settings = options["settings"]
+    payload = api.pack_payload(content_data, style_data, tag_id, settings)
 
     # Trigger style transfer on server with api
     if options["verbose"]: print("Sending style transfer request to server... ",
                                  end="")
+    
     r = requests.post(api.SERVER_URL + "/api/style", json=payload)
     
-    if r.status_code == api.STATUS_OK:
-        if options["verbose"]: print("OK")
-    else:
-        raise ValueError("Failed to contact server")
     
     # Wait for success response from server
     if options["verbose"]: print("Waiting for response from server ", end="")
@@ -70,13 +80,13 @@ if __name__ == "__main__":
     while not has_pastiche:
         r = requests.get(api.SERVER_URL + "/api/pastiche/" + tag_id)
         if r.status_code == api.STATUS_OK:
-            print("OK")
+            print(" Done!")
             has_pastiche = True
         elif r.status_code == api.STATUS_NOT_READY:
-            print(".", end="", flush=True)
+            print("#", end="", flush=True)
             time.sleep(1)
         else:
-            raise ValueError("Failed to contact server")
+            raise ValueError("FATAL: something went wrong")
 
     
     # Read pastiche image from server
@@ -85,7 +95,7 @@ if __name__ == "__main__":
     if r.status_code == api.STATUS_OK:
         pastiche_image = convert_image(r.content)
     else:
-        raise ValueError("Failed to contact server")
+        raise ValueError("FATAL: something went wrong")
     
     # Show pastiche image
     plt.imshow(np.asarray(pastiche_image))

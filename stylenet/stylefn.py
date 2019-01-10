@@ -4,6 +4,7 @@
 # as defined in Gatys et. al
 #
 
+import api
 import numpy as np
 import tensorflow as tf
 import keras.backend as K
@@ -15,7 +16,8 @@ from keras.models import Model
 from keras.layers import InputLayer
 from keras.applications.vgg16 import VGG16
 
-# Style transfer settings
+# Style transfer setting
+# NOTE: the following are default settings and may be overriden
 SETTINGS = {
     "image_shape": (512, 512, 3),
 
@@ -30,6 +32,14 @@ SETTINGS = {
     "denoising_layers": [ "input_1" ]
 }
 
+# Apply the given style transfer settings 
+# Only applys style transfer settings, ignores other values in settings
+def apply_settings(settings):
+    # Apply settings
+    for setting, value in settings.items():
+        if  setting in SETTINGS: # Check if setting is style transfer setting
+            SETTINGS[setting] = value
+    
 ## Data Preprocessing
 # Crop the given image to a square frame of x by x
 # where x is the length of the shorter side of the image

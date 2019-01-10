@@ -6,6 +6,7 @@
 #
 
 import os
+import api
 import numpy as np
 import tensorflow as tf
 import keras.backend as K
@@ -22,13 +23,20 @@ from datetime import datetime
 # before performing style transfer
 # Optimise for the given number epochs. If verbose is True, will output training
 # progress infomation to standard output
+# Applys the given style transfer settings before performing style transfer
 # Returns the pastiche, the results of performing style transfer
 K.set_learning_phase(0)
 def transfer_style(content_image, style_image, n_epochs=100, image_size=(512, 512),
-                   verbose=False):
+                   verbose=False, settings={}):
     #TODO: add progressive style transfer
-    # Update style parameters
+    # Update style transfer settings
+    if api.SETTING_NUMBER_EPOCHS_KEY in settings: 
+        n_epochs = settings[api.SETTING_NUMBER_EPOCHS_KEY]
+    stylefn.apply_settings(settings)
     stylefn.SETTINGS["image_shape"] = image_size + (3,)
+    if verbose:
+        print("[transfer_style()]: performing style transfer with settings: ", 
+              stylefn.SETTINGS)
     
     # Preprocess image data
     content = stylefn.preprocess_image(content_image)
