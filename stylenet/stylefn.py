@@ -169,7 +169,7 @@ def build_style_loss(pastiche_op, style_op):
         style_op = tf.expand_dims(style_op, axis=0)
         
         # Extract style features using style extractor
-        extractor = build_extractor(SETTINGS["content_layers"])
+        extractor = build_extractor(SETTINGS["style_layers"])
         pastiche_feature_ops = extractor(pastiche_op)
         style_feature_ops = extractor(style_op)
         
