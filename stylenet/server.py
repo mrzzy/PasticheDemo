@@ -41,7 +41,6 @@ class StyleWorker:
             # Perform style transfer
             if self.verbose: print("[StyleWorker]: processing payload: ", tag)
             pastiche_image = styleopt.transfer_style(content_image, style_image,
-                                                     image_size=(64, 64),
                                                      verbose=self.verbose)
         
             # Save results of style transfer
