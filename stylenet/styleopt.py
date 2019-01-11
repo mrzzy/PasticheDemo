@@ -61,8 +61,6 @@ class TransfuseGraph:
 
     # Build style transfer graph
     def build(self):
-        tf.reset_default_graph()
-       
         # Apply stylem transfer settings
         stylefn.SETTINGS = self.settings
 
@@ -103,25 +101,26 @@ def transfer_style(content_image, style_image, n_epochs=100, settings={},
 
     # Build style transfer graph
     graph = TransfuseGraph(settings)
+    session = K.get_session()
     
     # Setup tensorboard
     summary_op = tf.summary.merge_all()
     if tensorboard: 
         writer = tf.summary.FileWriter("logs/{}".format(datetime.now()), session.graph)
 
-    # Optimisem style transfer graph to perform style transfer
-    with tf.Session() as session:
-        session.run(tf.global_variables_initializer())
-        for i in range(1, n_epochs + 1):
-            feed = {graph.content_op: content, graph.style_op: style}
-            _, loss, pastiche = session.run([graph.train_op, graph.loss_op, 
-                                             graph.pastiche_op], feed_dict=feed)
-            # Display progress infomation and record data for tensorboard
-            if verbose: print("[{}/{}] loss: {:e}".format(i, n_epochs, loss), end="\r")
-            if tensorboard: 
-                summary = session.run(summary_op)
-                writer.add_summary(summary, i)
-        
+    # Optimise style transfer graph to perform style transfer
+    session.run(tf.global_variables_initializer())
+    for i in range(1, n_epochs + 1):
+        feed = {graph.content_op: content, graph.style_op: style}
+        _, loss, pastiche = session.run([graph.train_op, graph.loss_op, 
+                                         graph.pastiche_op], feed_dict=feed)
+        # Display progress infomation and record data for tensorboard
+        if verbose: print("[{}/{}] loss: {:e}".format(i, n_epochs, loss), end="\r")
+        if tensorboard: 
+            summary = session.run(summary_op)
+            writer.add_summary(summary, i)
+    K.clear_session()
+
     # Deprocess style transfered image
     pastiche_image = stylefn.deprocess_image(pastiche)
     return pastiche_image
