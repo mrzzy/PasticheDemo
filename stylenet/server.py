@@ -37,12 +37,16 @@ class StyleWorker:
             content_data, style_data, tag, settings = api.unpack_payload(payload)
             content_image = convert_image(content_data)
             style_image = convert_image(style_data)
-        
+
             # Perform style transfer
             if self.verbose: print("[StyleWorker]: processing payload: ", tag)
+            n_epochs = 100
+            if api.SETTING_NUMBER_EPOCHS_KEY in settings:  
+                n_epochs = settings[api.SETTING_NUMBER_EPOCHS_KEY]
             pastiche_image = styleopt.transfer_style(content_image, style_image,
-                                                     verbose=self.verbose,
-                                                     settings=settings)
+                                                     n_epochs=n_epochs,
+                                                     settings=settings,
+                                                     verbose=self.verbose)
         
             # Save results of style transfer
             if self.verbose: print("[StyleWorker]: completed payload: ", tag)
