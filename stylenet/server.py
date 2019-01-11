@@ -53,7 +53,7 @@ class StyleWorker:
             if not os.path.exists("static/pastiche"): os.mkdir("static/pastiche")
             pastiche_image.save("static/pastiche/{}.jpg".format(tag))
             
-worker = None
+worker = StyleWorker()
             
 ## Routes
 app = Flask(__name__, static_folder="static")

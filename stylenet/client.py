@@ -22,8 +22,8 @@ def parse_args():
     - Performs style transfer through style transfer server
     """)
     parser.add_argument("-v", action="store_true", help="produce verbose output")
-    parser.add_argument("-s", nargs="?", type=float, help="how much weight to style reproduction")
     parser.add_argument("-c", nargs="?", type=float, help="how much weight to content reproduction")
+    parser.add_argument("-s", nargs="?", type=float, help="how much weight to style reproduction")
     parser.add_argument("-d", nargs="?", type=float, help="how much weight to given produce a smooth image")
     parser.add_argument("-n", nargs="?", type=int, help="how many iterations of style transer to perform")
     parser.add_argument("content", help="path to the content image. \
@@ -34,10 +34,12 @@ def parse_args():
 
     # Parse style transfer settings
     settings = {}
-    if args.c: settings[api.SETTING_CONTENT_WEIGHT_KEY] = args.c
-    if args.s: settings[api.SETTING_STYLE_WEIGHT_KEY] = args.s
-    if args.d: settings[api.SETTING_DENOISE_WEIGHT_KEY] = args.d
-    if args.n: settings[api.SETTING_NUMBER_EPOCHS_KEY] = args.n
+    if not args.c is None: settings[api.SETTING_CONTENT_WEIGHT_KEY] = args.c
+    if not args.s is None: settings[api.SETTING_STYLE_WEIGHT_KEY] = args.s
+    if not args.d is None: settings[api.SETTING_DENOISE_WEIGHT_KEY] = args.d
+    if not args.n is None: settings[api.SETTING_NUMBER_EPOCHS_KEY] = args.n
+    
+    print(settings)
 
     # Build Program options
     options = { 
