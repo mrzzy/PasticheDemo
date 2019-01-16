@@ -38,8 +38,6 @@ def parse_args():
     if not args.s is None: settings[api.SETTING_STYLE_WEIGHT_KEY] = args.s
     if not args.d is None: settings[api.SETTING_DENOISE_WEIGHT_KEY] = args.d
     if not args.n is None: settings[api.SETTING_NUMBER_EPOCHS_KEY] = args.n
-    
-    print(settings)
 
     # Build Program options
     options = { 

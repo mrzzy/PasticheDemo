@@ -24,14 +24,14 @@ from datetime import datetime
 class TransfuseGraph:
     # Create a style transfer graph that caters the style and content images
     # with the given style transfer settings (overrides
-    def __init__(self, settings):
+    def __init__(self, settings, content):
         self.settings = self.compile_settings(settings)
         # Define tensor shapes
         self.style_shape = self.settings["image_shape"]
         self.content_shape = self.settings["image_shape"]
         self.pastiche_shape = self.settings["image_shape"]
         
-        self.build()
+        self.build(content)
     
     # Compile the settings for performing style transfer, taking into account
     # additional setting overrides from the given settings
@@ -60,7 +60,7 @@ class TransfuseGraph:
         return settings
 
     # Build style transfer graph
-    def build(self):
+    def build(self, content):
         # Apply stylem transfer settings
         stylefn.SETTINGS = self.settings
 
@@ -100,7 +100,7 @@ def transfer_style(content_image, style_image, n_epochs=100, settings={},
     style = stylefn.preprocess_image(style_image)
 
     # Build style transfer graph
-    graph = TransfuseGraph(settings)
+    graph = TransfuseGraph(settings, content)
     session = K.get_session()
     
     # Setup tensorboard
